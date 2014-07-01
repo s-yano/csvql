@@ -2,4 +2,5 @@
 
 require 'csvql'
 
+Version = Csvql::VERSION
 Csvql.run(ARGV)

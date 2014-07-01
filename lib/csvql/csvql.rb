@@ -23,7 +23,6 @@ module Csvql
 
     def create_table(cols, header, table_name="tbl")
       @col_size = cols.size
-      @header = header
       @table_name = table_name
       col = if header
               cols.map {|c| "#{c} TEXT" }
@@ -64,12 +63,12 @@ module Csvql
       opt.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| option[:console] = v }
       opt.on("--header",          "Treat file as having the first row as a header row") {|v| option[:header] = v }
       opt.on("--save-to=FILE",    "If set, sqlite3 db is left on disk at this path")    {|v| option[:save_to] = v }
-      opt.on("--skip-comment",    "Skep comment lines start with '#'")                  {|v| option[:skip_comment] = v }
+      opt.on("--skip-comment",    "Skip comment lines start with '#'")                  {|v| option[:skip_comment] = v }
       opt.on("--source=FILE",     "Source file to load, or defaults to stdin")          {|v| option[:source] = v }
       opt.on("--sql=SQL",         "SQL Command(s) to run on the data")                  {|v| option[:sql] = v }
       opt.on("--table-name=NAME", "Override the default table name (tbl)")              {|v| option[:table_name] = v }
       opt.on("--verbose",         "Enable verbose logging")                             {|v| option[:verbose] = v }
-      opt.parse!(ARGV)
+      opt.parse!(argv)
 
       option
     end
