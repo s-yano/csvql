@@ -1,6 +1,6 @@
 # Csvql
 
-TODO: Write a gem description
+Csvql is inspired by [TextQL](https://github.com/dinedal/textql)
 
 ## Installation
 
