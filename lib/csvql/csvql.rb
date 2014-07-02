@@ -24,16 +24,17 @@ module Csvql
     def create_table(cols, header, table_name="tbl")
       @col_size = cols.size
       @table_name = table_name
-      col = if header
-              cols.map {|c| "#{c} TEXT" }
-            else
-              @col_size.times.map {|i| "c#{i} TEXT" }
-            end
+      @col_name = if header
+                    cols
+                  else
+                    @col_size.times.map {|i| "c#{i}" }
+                  end
+      col = @col_name.map {|c| "#{c} TEXT" }
       sql = "CREATE TABLE #{@table_name} (#{col.join(",")});"
       @db.execute(sql)
     end
 
-    def insert(cols, line)
+    def single_insert(cols, line)
       if cols.size != @col_size
         puts "line #{line}: wrong number of fields in line"
         return
@@ -41,6 +42,31 @@ module Csvql
       col = cols.map {|c| "'#{c}'" }
       sql = "INSERT INTO #{@table_name} VALUES(#{col.join(",")});"
       @db.execute(sql)
+    end
+
+    def bulk_insert(bulk)
+      rows = []
+      bulk.each do |cols|
+        col = cols.map {|c| "'#{c}'" }
+        rows << "(#{col.join(',')})"
+      end
+      sql = "INSERT INTO #{@table_name} VALUES#{rows.join(",")};"
+      # puts sql
+      @db.execute(sql)
+    end
+
+    def prepare(cols)
+      sql = "INSERT INTO #{@table_name} (#{@col_name.join(",")}) VALUES (#{cols.map{"?"}.join(",")});"
+      @pre = @db.prepare(sql)
+    end
+
+    def insert(cols, line)
+      if cols.size != @col_size
+        puts "line #{line}: wrong number of fields in line"
+        return
+      end
+      @pre ||= prepare(cols)
+      @pre.execute(cols)
     end
 
     def exec(sql)
@@ -80,21 +106,26 @@ module Csvql
         exit 1
       end
 
+      csvfile = option[:source] ? File.open(option[:source]) : $stdin
+
       tbl = TableHandler.new(option[:save_to], option[:console])
-      csvfile = option[:source] ? File.open(option[:source]) : STDIN
+      bulk = []
+      tbl.exec("PRAGMA synchronous=OFF")
+      tbl.exec("BEGIN TRANSACTION")
       csvfile.each.with_index(1) do |line,i|
-        line = line.strip
         next if option[:skip_comment] && line.start_with?("#")
         row = NKF.nkf('-w', line).parse_csv
         if i == 1
           tbl.create_table(row, option[:header], option[:table_name]||"tbl")
           next if option[:header]
         end
-        tbl.insert(row, i)
+        tbl.insert(row,i)
       end
+      tbl.exec("COMMIT TRANSACTION")
 
       tbl.exec(option[:sql]) if option[:sql]
       tbl.open_console if option[:console]
     end
   end
 end
+

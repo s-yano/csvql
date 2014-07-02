@@ -1,6 +1,6 @@
 # Csvql
 
-Csvql is inspired by [TextQL](https://github.com/dinedal/textql)
+Csvql is inspired by [TextQL](https://github.com/dinedal/textql).
 
 ## Installation
 
