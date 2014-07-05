@@ -29,8 +29,8 @@ module Csvql
                   else
                     @col_size.times.map {|i| "c#{i}" }
                   end
-      col = @col_name.map {|c| "#{c} TEXT" }
-      sql = "CREATE TABLE #{@table_name} (#{col.join(",")});"
+      col = @col_name.map {|c| "#{c} NONE" }
+      sql = "CREATE TABLE #{@table_name} (#{col.join(",")})"
       @db.execute(sql)
     end
 
@@ -129,3 +129,4 @@ module Csvql
   end
 end
 
+Csvql.run(ARGV)
