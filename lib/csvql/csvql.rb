@@ -128,5 +128,3 @@ module Csvql
     end
   end
 end
-
-Csvql.run(ARGV)
