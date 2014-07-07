@@ -68,12 +68,14 @@ Save to db-file:
 
 Change output delimiter:
 
-    $ csvql --source sample.csv --header -sql "select * from tbl where age > 30" --output-dlm ","
-    2,Bob,25
-    4,Daniel,16
-    $ csvql --source sample.csv --header -sql "select * from tbl where age > 30" --output-dlm=tab
-    2	Bob	25
-    4	Daniel	16
+    $ csvql --source sample.csv --header --sql "select * from tbl where age > 30" --output-dlm ","
+    1,Anne,33
+    3,Charry,48
+    5,Edward,52
+    $ csvql --source sample.csv --header --sql "select * from tbl where age > 30" --output-dlm=tab
+    1       Anne    33
+    3       Charry  48
+    5       Edward  52
 
 Options:
 
