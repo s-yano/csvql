@@ -69,9 +69,12 @@ module Csvql
       @pre.execute(cols)
     end
 
-    def exec(sql)
+    def exec(sql, dlm="|")
+      if dlm.downcase == 'tab'
+        dlm = "\t"
+      end
       @db.execute(sql) do |row|
-        puts row.join("|")
+        puts row.join(dlm)
       end
     end
 
@@ -88,6 +91,7 @@ module Csvql
 
       opt.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| option[:console] = v }
       opt.on("--header",          "Treat file as having the first row as a header row") {|v| option[:header] = v }
+      opt.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| option[:output_dlm] = v }
       opt.on("--save-to=FILE",    "If set, sqlite3 db is left on disk at this path")    {|v| option[:save_to] = v }
       opt.on("--skip-comment",    "Skip comment lines start with '#'")                  {|v| option[:skip_comment] = v }
       opt.on("--source=FILE",     "Source file to load, or defaults to stdin")          {|v| option[:source] = v }
@@ -113,8 +117,10 @@ module Csvql
       tbl.exec("PRAGMA synchronous=OFF")
       tbl.exec("BEGIN TRANSACTION")
       csvfile.each.with_index(1) do |line,i|
+        line = NKF.nkf('-w', line).strip
+        next if line.size == 0
         next if option[:skip_comment] && line.start_with?("#")
-        row = NKF.nkf('-w', line).parse_csv
+        row = line.parse_csv
         if i == 1
           tbl.create_table(row, option[:header], option[:table_name]||"tbl")
           next if option[:header]
@@ -123,7 +129,7 @@ module Csvql
       end
       tbl.exec("COMMIT TRANSACTION")
 
-      tbl.exec(option[:sql]) if option[:sql]
+      tbl.exec(option[:sql], option[:output_dlm]||"|") if option[:sql]
       tbl.open_console if option[:console]
     end
   end

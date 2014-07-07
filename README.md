@@ -66,12 +66,22 @@ Save to db-file:
     sqlite> select avg(age) from tbl;
     34.8
 
+Change output delimiter:
+
+    $ csvql --source sample.csv --header -sql "select * from tbl where age > 30" --output-dlm ","
+    2,Bob,25
+    4,Daniel,16
+    $ csvql --source sample.csv --header -sql "select * from tbl where age > 30" --output-dlm=tab
+    2	Bob	25
+    4	Daniel	16
+
 Options:
 
     $ svql --help
     Usage: csvql [options]
         --console                    After all commands are run, open sqlite3 console with this data
         --header                     Treat file as having the first row as a header row
+        --output-dlm="|"             Output delimiter (|)
         --save-to=FILE               If set, sqlite3 db is left on disk at this path
         --skip-comment               Skip comment lines start with '#'
         --source=FILE                Source file to load, or defaults to stdin
