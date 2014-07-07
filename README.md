@@ -56,6 +56,11 @@ From stdin:
     $ cat sample.csv | csvql --header --sql "select max(age) from tbl"
     52
 
+And you can specify source csvfile at the first argment, instead of --source option or stdin:
+
+    $ csvql sample.csv --header --sql "select max(age) from tbl"
+    52
+
 Save to db-file:
 
     $ csvql --source sample.csv --header --save-to test.db
@@ -77,19 +82,27 @@ Change output delimiter:
     3       Charry  48
     5       Edward  52
 
+Only where clause:
+
+    $ csvql sample.csv --header --where "age between 30 and 50"
+    1|Anne|33
+    3|Charry|48
+
 Options:
 
     $ svql --help
-    Usage: csvql [options]
-        --console                    After all commands are run, open sqlite3 console with this data
-        --header                     Treat file as having the first row as a header row
-        --output-dlm="|"             Output delimiter (|)
-        --save-to=FILE               If set, sqlite3 db is left on disk at this path
-        --skip-comment               Skip comment lines start with '#'
-        --source=FILE                Source file to load, or defaults to stdin
-        --sql=SQL                    SQL Command(s) to run on the data
-        --table-name=NAME            Override the default table name (tbl)
-        --verbose                    Enable verbose logging
+    Usage: csvql [csvfile] [options]
+	    --console                    After all commands are run, open sqlite3 console with this data
+	    --header                     Treat file as having the first row as a header row
+	    --output-dlm="|"             Output delimiter (|)
+	    --save-to=FILE               If set, sqlite3 db is left on disk at this path
+	    --skip-comment               Skip comment lines start with '#'
+	    --source=FILE                Source file to load, or defaults to stdin
+	    --sql=SQL                    SQL Command(s) to run on the data
+	    --select=COLUMN              Select column (*)
+	    --where=COND                 Where clause
+	    --table-name=NAME            Override the default table name (tbl)
+	    --verbose                    Enable verbose logging
 
 ## Contributing
 

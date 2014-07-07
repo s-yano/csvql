@@ -89,6 +89,7 @@ module Csvql
       opt = OptionParser.new
       option = {}
 
+      opt.banner = "Usage: csvql [csvfile] [options]"
       opt.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| option[:console] = v }
       opt.on("--header",          "Treat file as having the first row as a header row") {|v| option[:header] = v }
       opt.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| option[:output_dlm] = v }
@@ -96,10 +97,14 @@ module Csvql
       opt.on("--skip-comment",    "Skip comment lines start with '#'")                  {|v| option[:skip_comment] = v }
       opt.on("--source=FILE",     "Source file to load, or defaults to stdin")          {|v| option[:source] = v }
       opt.on("--sql=SQL",         "SQL Command(s) to run on the data")                  {|v| option[:sql] = v }
+      opt.on("--select=COLUMN",   "Select column (*)")                                  {|v| option[:select] = v }
+      opt.on("--where=COND",      "Where clause")                                       {|v| option[:where] = v }
       opt.on("--table-name=NAME", "Override the default table name (tbl)")              {|v| option[:table_name] = v }
       opt.on("--verbose",         "Enable verbose logging")                             {|v| option[:verbose] = v }
       opt.parse!(argv)
 
+      option[:source] ||= argv[0]
+      option[:table_name] ||= "tbl"
       option
     end
 
@@ -107,6 +112,10 @@ module Csvql
       option = option_parse(argv)
       if option[:console] && option[:source] == nil
         puts "Can not open console with pipe input, read a file instead"
+        exit 1
+      end
+      if option[:sql] && (option[:select] || option[:where])
+        puts "Can not use --sql option and --select|--where option at the same time."
         exit 1
       end
 
@@ -122,12 +131,20 @@ module Csvql
         next if option[:skip_comment] && line.start_with?("#")
         row = line.parse_csv
         if i == 1
-          tbl.create_table(row, option[:header], option[:table_name]||"tbl")
+          tbl.create_table(row, option[:header], option[:table_name])
           next if option[:header]
         end
         tbl.insert(row,i)
       end
       tbl.exec("COMMIT TRANSACTION")
+
+      if option[:select] || option[:where]
+        option[:select] ||= "*"
+        option[:sql] = "select #{option[:select]} from #{option[:table_name]}"
+        if option[:where]
+          option[:sql] += " where #{option[:where]}"
+        end
+      end
 
       tbl.exec(option[:sql], option[:output_dlm]||"|") if option[:sql]
       tbl.open_console if option[:console]
