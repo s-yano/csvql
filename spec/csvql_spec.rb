@@ -47,10 +47,39 @@ EOL
 
   it 'change table name' do
     expect(capture {
-             Csvql.run([csvfile, "--sql", "select id,name from user_info where id >= 4", "--table-name", "user_info"])
+             Csvql.run([csvfile, "--sql", "select id,name from users where id >= 4", "--table-name", "users"])
            }).to eq(<<EOL)
 4|Daniel
 5|Edward
+EOL
+  end
+
+  it 'save-to db file' do
+    dbfile = "csvql_test.db"
+    Csvql.run([csvfile, "--save-to", dbfile])
+    expect(`sqlite3 #{dbfile} "select * from tbl"`).to eq(<<EOL)
+1|Anne|33
+2|Bob|25
+3|Charry|48
+4|Daniel|16
+5|Edward|52
+EOL
+    File.delete dbfile
+  end
+
+  it 'no header' do
+    expect(capture {
+             Csvql.run([csvfile, "--no-header", "--where", "typeof(c0)!='integer'"])
+           }).to eq(<<EOL)
+id|name|age
+EOL
+  end
+
+  it 'source option' do
+    expect(capture {
+             Csvql.run(["--source", csvfile, "--select", "count(*)"])
+           }).to eq(<<EOL)
+5
 EOL
   end
 end

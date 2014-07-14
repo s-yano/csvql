@@ -10,13 +10,12 @@ require "csvql/version"
 module Csvql
   class << self
     def option_parse(argv)
-      opt = OptionParser.new
+      opt = OptionParser.new("Usage: csvql [csvfile] [options]")
       option = {}
 
       # default
       option[:header] = true
 
-      opt.banner = "Usage: csvql [csvfile] [options]"
       opt.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| option[:console] = v }
       opt.on("--[no-]header",     "Treat file as having the first row as a header row") {|v| option[:header] = v }
       opt.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| option[:output_dlm] = v }
