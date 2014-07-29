@@ -21,13 +21,11 @@ module Csvql
       @col_name = schema.split(",").map {|c| c.split.first.strip }
       @col_size = @col_name.size
       @table_name = table_name
-      sql = "CREATE TABLE IF NOT EXISTS #{@table_name} (#{schema})"
-      @db.execute(sql)
+      exec "CREATE TABLE IF NOT EXISTS #{@table_name} (#{schema})"
     end
 
     def drop_table(table_name="tbl")
-      sql = "DROP TABLE IF EXISTS #{table_name}"
-      @db.execute(sql)
+      exec "DROP TABLE IF EXISTS #{table_name}"
     end
 
     def prepare(cols)

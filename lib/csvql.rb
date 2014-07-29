@@ -26,6 +26,7 @@ module Csvql
       opt.on("--sql=SQL",         "SQL Command(s) to run on the data")                  {|v| option[:sql] = v }
       opt.on("--select=COLUMN",   "Select column (*)")                                  {|v| option[:select] = v }
       opt.on("--schema=FILE or STRING", "Specify a table schema")                       {|v| option[:schema] = v }
+      opt.on("--strip",           "strip every column data")                            {|v| option[:strip] = v }
       opt.on("--where=COND",      "Where clause")                                       {|v| option[:where] = v }
       opt.on("--table-name=NAME", "Override the default table name (tbl)")              {|v| option[:table_name] = v }
       opt.on("--verbose",         "Enable verbose logging")                             {|v| option[:verbose] = v }
@@ -87,6 +88,7 @@ module Csvql
         next if line.size == 0
         next if option[:skip_comment] && line.start_with?("#")
         row = line.parse_csv
+        row.map!(&:strip) if option[:strip]
         tbl.insert(row, i)
       end
       tbl.exec("COMMIT TRANSACTION")
