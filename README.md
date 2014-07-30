@@ -82,7 +82,7 @@ Change output delimiter:
     3       Charry  48
     5       Edward  52
 
-Only where clause:
+Only where-clause:
 
     $ csvql sample.csv --header --where "age between 30 and 50"
     1|Anne|33
@@ -91,13 +91,10 @@ Only where clause:
 Strip spaces around columns:
 
     $ cat sample2.csv
-    name,email,tel
     Graham ,  grhm@example.com , 555-1234
-
-    $ csvql sample2.csv --header --select "*"
+    $ csvql sample2.csv --select "*"
     Graham |  grhm@example.com | 555-1234
-
-    $ csvql sample2.csv --header --select "*" --strip
+    $ csvql sample2.csv --select "*" --strip
     Graham|grhm@example.com|555-1234
 
 Options:
