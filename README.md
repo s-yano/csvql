@@ -114,7 +114,7 @@ Options:
 	    --sql=SQL                    SQL Command(s) to run on the data
 	    --select=COLUMN              Select column (*)
 	    --schema=FILE or STRING      Specify a table schema
-	    --strip                      strip every column data
+	    --strip                      Strip spaces around column
 	    --where=COND                 Where clause
 	    --table-name=NAME            Override the default table name (tbl)
 	    --verbose                    Enable verbose logging
