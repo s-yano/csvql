@@ -14,7 +14,7 @@ module Csvql
       option = {}
 
       # default
-      option[:header] = true
+      # option[:header] = true
 
       opt.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| option[:console] = v }
       opt.on("--[no-]header",     "Treat file as having the first row as a header row") {|v| option[:header] = v }

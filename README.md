@@ -88,18 +88,33 @@ Only where clause:
     1|Anne|33
     3|Charry|48
 
+Strip spaces around columns:
+
+    $ cat sample2.csv
+    name,email,tel
+    Graham ,  grhm@example.com , 555-1234
+
+    $ csvql sample2.csv --header --select "*"
+    Graham |  grhm@example.com | 555-1234
+
+    $ csvql sample2.csv --header --select "*" --strip
+    Graham|grhm@example.com|555-1234
+
 Options:
 
-    $ svql --help
+    $ csvql --help
     Usage: csvql [csvfile] [options]
 	    --console                    After all commands are run, open sqlite3 console with this data
-	    --header                     Treat file as having the first row as a header row
+	    --[no-]header                Treat file as having the first row as a header row
 	    --output-dlm="|"             Output delimiter (|)
 	    --save-to=FILE               If set, sqlite3 db is left on disk at this path
+	    --append                     Append mode (not dropping any tables)
 	    --skip-comment               Skip comment lines start with '#'
 	    --source=FILE                Source file to load, or defaults to stdin
 	    --sql=SQL                    SQL Command(s) to run on the data
 	    --select=COLUMN              Select column (*)
+	    --schema=FILE or STRING      Specify a table schema
+	    --strip                      strip every column data
 	    --where=COND                 Where clause
 	    --table-name=NAME            Override the default table name (tbl)
 	    --verbose                    Enable verbose logging
