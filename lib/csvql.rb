@@ -34,7 +34,11 @@ module Csvql
 
       option[:source] ||= argv[0]
       # option[:where] ||= argv[1]
-      option[:table_name] ||= "tbl"
+      option[:table_name] ||= if option[:save_to] && option[:source] != nil
+                                File.basename(option[:source].downcase, ".csv").gsub(/\./, "_")
+                              else
+                                "tbl"
+                              end
       if option[:output_dlm] == 'tab'
         option[:output_dlm] = "\t"
       end
@@ -81,6 +85,7 @@ module Csvql
       tbl = TableHandler.new(option[:save_to], option[:console])
       tbl.drop_table(option[:table_name]) unless option[:append]
       tbl.create_table(schema, option[:table_name])
+      tbl.create_alias(option[:table_name]) if option[:save_to] && option[:table_name] != "tbl"
       tbl.exec("PRAGMA synchronous=OFF")
       tbl.exec("BEGIN TRANSACTION")
       csvfile.each.with_index(1) do |line,i|

@@ -24,6 +24,11 @@ module Csvql
       exec "CREATE TABLE IF NOT EXISTS #{@table_name} (#{schema})"
     end
 
+    def create_alias(table, view="tbl")
+      exec "DROP VIEW IF EXISTS #{view}"
+      exec "CREATE VIEW #{view} AS SELECT * FROM #{table}"
+    end
+
     def drop_table(table_name="tbl")
       exec "DROP TABLE IF EXISTS #{table_name}"
     end
