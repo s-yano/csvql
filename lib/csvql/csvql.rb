@@ -25,6 +25,7 @@ module Csvql
     end
 
     def create_alias(table, view="tbl")
+      return if table == view
       exec "DROP VIEW IF EXISTS #{view}"
       exec "CREATE VIEW #{view} AS SELECT * FROM #{table}"
     end

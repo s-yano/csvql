@@ -3,6 +3,7 @@
 require 'csv'
 require 'nkf'
 require 'optparse'
+require 'ostruct'
 
 require "csvql/csvql"
 require "csvql/version"
@@ -10,62 +11,62 @@ require "csvql/version"
 module Csvql
   class << self
     def option_parse(argv)
-      opt = OptionParser.new("Usage: csvql [csvfile] [options]")
-      option = {}
+      opt_parser = OptionParser.new("Usage: csvql [csvfile] [options]")
+      opt = OpenStruct.new
 
       # default
       # option[:header] = true
 
-      opt.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| option[:console] = v }
-      opt.on("--[no-]header",     "Treat file as having the first row as a header row") {|v| option[:header] = v }
-      opt.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| option[:output_dlm] = v }
-      opt.on("--save-to=FILE",    "If set, sqlite3 db is left on disk at this path")    {|v| option[:save_to] = v }
-      opt.on("--append",          "Append mode (not dropping any tables)")              {|v| option[:append] = v }
-      opt.on("--skip-comment",    "Skip comment lines start with '#'")                  {|v| option[:skip_comment] = v }
-      opt.on("--source=FILE",     "Source file to load, or defaults to stdin")          {|v| option[:source] = v }
-      opt.on("--sql=SQL",         "SQL Command(s) to run on the data")                  {|v| option[:sql] = v }
-      opt.on("--select=COLUMN",   "Select column (*)")                                  {|v| option[:select] = v }
-      opt.on("--schema=FILE or STRING", "Specify a table schema")                       {|v| option[:schema] = v }
-      opt.on("--strip",           "Strip spaces around columns")                        {|v| option[:strip] = v }
-      opt.on("--where=COND",      "Where clause")                                       {|v| option[:where] = v }
-      opt.on("--table-name=NAME", "Override the default table name (tbl)")              {|v| option[:table_name] = v }
-      opt.on("--verbose",         "Enable verbose logging")                             {|v| option[:verbose] = v }
-      opt.parse!(argv)
+      opt_parser.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| opt.console = v }
+      opt_parser.on("--[no-]header",     "Treat file as having the first row as a header row") {|v| opt.header = v }
+      opt_parser.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| opt.output_dlm = v }
+      opt_parser.on("--save-to=FILE",    "If set, sqlite3 db is left on disk at this path")    {|v| opt.save_to = v }
+      opt_parser.on("--append",          "Append mode (not dropping any tables)")              {|v| opt.append = v }
+      opt_parser.on("--skip-comment",    "Skip comment lines start with '#'")                  {|v| opt.skip_comment = v }
+      opt_parser.on("--source=FILE",     "Source file to load, or defaults to stdin")          {|v| opt.source = v }
+      opt_parser.on("--sql=SQL",         "SQL Command(s) to run on the data")                  {|v| opt.sql = v }
+      opt_parser.on("--select=COLUMN",   "Select column (*)")                                  {|v| opt.select = v }
+      opt_parser.on("--schema=FILE or STRING", "Specify a table schema")                       {|v| opt.schema = v }
+      opt_parser.on("--strip",           "Strip spaces around columns")                        {|v| opt.strip = v }
+      opt_parser.on("--where=COND",      "Where clause")                                       {|v| opt.where = v }
+      opt_parser.on("--table-name=NAME", "Override the default table name (tbl)")              {|v| opt.table_name = v }
+      opt_parser.on("--verbose",         "Enable verbose logging")                             {|v| opt.verbose = v }
+      opt_parser.parse!(argv)
 
-      option[:source] ||= argv[0]
-      # option[:where] ||= argv[1]
-      option[:table_name] ||= if option[:save_to] && option[:source] != nil
-                                File.basename(option[:source].downcase, ".csv").gsub(/\./, "_")
+      opt.source ||= argv[0]
+      # opt.where] ||= argv[1]
+      opt.table_name ||= if opt.save_to && opt.source != nil
+                                File.basename(opt.source.downcase, ".csv").gsub(/\./, "_")
                               else
                                 "tbl"
                               end
-      if option[:output_dlm] == 'tab'
-        option[:output_dlm] = "\t"
+      if opt.output_dlm == 'tab'
+        opt.output_dlm = "\t"
       end
-      option[:output_dlm] ||= "|"
+      opt.output_dlm ||= "|"
 
-      if option[:completion]
+      if opt.completion
         puts opt.compsys('csvql')
         exit 0
       end
-      option
+      opt
     end
 
     def run(argv)
-      option = option_parse(argv)
-      if option[:console] && option[:source] == nil
+      opt = option_parse(argv)
+      if opt.console && opt.source == nil
         puts "Can not open console with pipe input, read a file instead"
         exit 1
       end
-      if option[:sql] && (option[:select] || option[:where])
+      if opt.sql && (opt.select || opt.where)
         puts "Can not use --sql option and --select|--where option at the same time."
         exit 1
       end
 
-      csvfile = option[:source] ? File.open(option[:source]) : $stdin
+      csvfile = opt.source ? File.open(opt.source) : $stdin
       first_line = csvfile.readline
 
-      schema = option[:schema]
+      schema = opt.schema
       if schema
         file = File.expand_path(schema)
         if File.exist?(file)
@@ -73,43 +74,43 @@ module Csvql
         end
       else
         cols = first_line.parse_csv
-        col_name = if option[:header]
+        col_name = if opt.header
                      cols
                    else
                      cols.size.times.map {|i| "c#{i}" }
                    end
         schema = col_name.map {|c| "#{c} NONE" }.join(",")
       end
-      csvfile.rewind unless option[:header]
+      csvfile.rewind unless opt.header
 
-      tbl = TableHandler.new(option[:save_to], option[:console])
-      tbl.drop_table(option[:table_name]) unless option[:append]
-      tbl.create_table(schema, option[:table_name])
-      tbl.create_alias(option[:table_name]) if option[:save_to] && option[:table_name] != "tbl"
+      tbl = TableHandler.new(opt.save_to, opt.console)
+      tbl.drop_table(opt.table_name) unless opt.append
+      tbl.create_table(schema, opt.table_name)
+      tbl.create_alias(opt.table_name) if opt.save_to
       tbl.exec("PRAGMA synchronous=OFF")
       tbl.exec("BEGIN TRANSACTION")
       csvfile.each.with_index(1) do |line,i|
         line = NKF.nkf('-w', line).strip
         next if line.size == 0
-        next if option[:skip_comment] && line.start_with?("#")
+        next if opt.skip_comment && line.start_with?("#")
         row = line.parse_csv
-        row.map!(&:strip) if option[:strip]
+        row.map!(&:strip) if opt.strip
         tbl.insert(row, i)
       end
       tbl.exec("COMMIT TRANSACTION")
 
-      if option[:sql]
-        sql = option[:sql]
-      elsif option[:select] || option[:where]
-        option[:select] ||= "*"
-        sql = "select #{option[:select]} from #{option[:table_name]}"
-        if option[:where]
-          sql += " where (#{option[:where]})"
+      if opt.sql
+        sql = opt.sql
+      elsif opt.select || opt.where
+        opt.select ||= "*"
+        sql = "select #{opt.select} from #{opt.table_name}"
+        if opt.where
+          sql += " where (#{opt.where})"
         end
       end
 
-      tbl.exec(sql).each {|row| puts row.join(option[:output_dlm]) } if sql
-      tbl.open_console if option[:console]
+      tbl.exec(sql).each {|row| puts row.join(opt.output_dlm) } if sql
+      tbl.open_console if opt.console
     end
   end
 end

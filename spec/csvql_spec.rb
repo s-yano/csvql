@@ -9,7 +9,7 @@ describe Csvql do
 
   it 'select name' do
     expect(capture {
-             Csvql.run([csvfile, "--select", "name"])
+             Csvql.run([csvfile, "--header", "--select", "name"])
            }).to eq(<<EOL)
 Anne
 Bob
@@ -21,7 +21,7 @@ EOL
 
   it 'where age > 40' do
     expect(capture {
-             Csvql.run([csvfile, "--where", "age > 40"])
+             Csvql.run([csvfile, "--header", "--where", "age > 40"])
            }).to eq(<<EOL)
 3|Charry|48
 5|Edward|52
@@ -30,7 +30,7 @@ EOL
 
   it 'sql option' do
     expect(capture {
-             Csvql.run([csvfile, "--sql", "select name,age from tbl where age between 20 and 40"])
+             Csvql.run([csvfile, "--header", "--sql", "select name,age from tbl where age between 20 and 40"])
            }).to eq(<<EOL)
 Anne|33
 Bob|25
@@ -39,7 +39,7 @@ EOL
 
   it 'change output delimiter' do
     expect(capture {
-             Csvql.run([csvfile, "--where", "id = 3", "--output-dlm", ","])
+             Csvql.run([csvfile, "--header", "--where", "id = 3", "--output-dlm", ","])
            }).to eq(<<EOL)
 3,Charry,48
 EOL
@@ -47,7 +47,7 @@ EOL
 
   it 'change table name' do
     expect(capture {
-             Csvql.run([csvfile, "--sql", "select id,name from users where id >= 4", "--table-name", "users"])
+             Csvql.run([csvfile, "--header", "--sql", "select id,name from users where id >= 4", "--table-name", "users"])
            }).to eq(<<EOL)
 4|Daniel
 5|Edward
@@ -56,7 +56,7 @@ EOL
 
   it 'save-to db file' do
     dbfile = "csvql_test.db"
-    Csvql.run([csvfile, "--save-to", dbfile])
+    Csvql.run([csvfile, "--header", "--save-to", dbfile])
     expect(`sqlite3 #{dbfile} "select * from tbl"`).to eq(<<EOL)
 1|Anne|33
 2|Bob|25
@@ -77,7 +77,7 @@ EOL
 
   it 'source option' do
     expect(capture {
-             Csvql.run(["--source", csvfile, "--select", "count(*)"])
+             Csvql.run(["--source", csvfile, "--header", "--select", "count(*)"])
            }).to eq(<<EOL)
 5
 EOL
