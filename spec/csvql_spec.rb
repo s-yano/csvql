@@ -69,7 +69,7 @@ EOL
 
   it 'no header' do
     expect(capture {
-             Csvql.run([csvfile, "--no-header", "--where", "typeof(c0)!='integer'"])
+             Csvql.run([csvfile, "--where", "typeof(c0)!='integer'"])
            }).to eq(<<EOL)
 id|name|age
 EOL

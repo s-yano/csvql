@@ -18,7 +18,7 @@ module Csvql
       # option[:header] = true
 
       opt_parser.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| opt.console = v }
-      opt_parser.on("--[no-]header",     "Treat file as having the first row as a header row") {|v| opt.header = v }
+      opt_parser.on("--header",          "Treat file as having the first row as a header row") {|v| opt.header = v }
       opt_parser.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| opt.output_dlm = v }
       opt_parser.on("--save-to=FILE",    "If set, sqlite3 db is left on disk at this path")    {|v| opt.save_to = v }
       opt_parser.on("--append",          "Append mode (not dropping any tables)")              {|v| opt.append = v }
