@@ -19,7 +19,8 @@ module Csvql
 
       opt_parser.on("--console",         "After all commands are run, open sqlite3 console with this data") {|v| opt.console = v }
       opt_parser.on("--header",          "Treat file as having the first row as a header row") {|v| opt.header = v }
-      opt_parser.on('--output-dlm="|"',  "Output delimiter (|)")                               {|v| opt.output_dlm = v }
+      opt_parser.on('--ifs=","',         "Input field separator (,)")                          {|v| opt.ifs = v }
+      opt_parser.on('--ofs="|"',         "Output field separator (|)")                         {|v| opt.ofs = v }
       opt_parser.on("--save-to=FILE",    "If set, sqlite3 db is left on disk at this path")    {|v| opt.save_to = v }
       opt_parser.on("--append",          "Append mode (not dropping any tables)")              {|v| opt.append = v }
       opt_parser.on("--skip-comment",    "Skip comment lines start with '#'")                  {|v| opt.skip_comment = v }
@@ -40,10 +41,14 @@ module Csvql
                               else
                                 "tbl"
                               end
-      if opt.output_dlm == 'tab'
-        opt.output_dlm = "\t"
+      if opt.ifs == 'tab'
+        opt.ifs = "\t"
       end
-      opt.output_dlm ||= "|"
+
+      if opt.ofs == 'tab'
+        opt.ofs = "\t"
+      end
+      opt.ofs ||= "|"
 
       if opt.completion
         puts opt.compsys('csvql')
@@ -73,7 +78,7 @@ module Csvql
           schema = File.open(file).read
         end
       else
-        cols = first_line.parse_csv
+        cols = first_line.parse_csv(col_sep: opt.ifs)
         col_name = if opt.header
                      cols
                    else
@@ -93,7 +98,7 @@ module Csvql
         line = NKF.nkf('-w', line).strip
         next if line.size == 0
         next if opt.skip_comment && line.start_with?("#")
-        row = line.parse_csv
+        row = line.parse_csv(col_sep: opt.ifs)
         row.map!(&:strip) if opt.strip
         tbl.insert(row, i)
       end
@@ -109,7 +114,7 @@ module Csvql
         end
       end
 
-      tbl.exec(sql).each {|row| puts row.join(opt.output_dlm) } if sql
+      tbl.exec(sql).each {|row| puts row.join(opt.ofs) } if sql
       tbl.open_console if opt.console
     end
   end
