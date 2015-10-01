@@ -40,9 +40,11 @@ module Csvql
     end
 
     def insert(cols, line)
-      if cols.size != @col_size
-        puts "line #{line}: wrong number of fields in line (skipping)"
+      if cols.size > @col_size
+        puts "line #{line}: too many fields in line (skipping)"
         return
+      elsif cols.size < @col_size
+        cols << Array.new(@col_size - cols.size)
       end
       @pre ||= prepare(cols)
       @pre.execute(cols)
