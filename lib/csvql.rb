@@ -84,9 +84,10 @@ module Csvql
                    else
                      cols.size.times.map {|i| "c#{i}" }
                    end
-        schema = col_name.map {|c| "#{c} NONE" }.join(",")
+        schema = col_name.map {|c| "[#{c}] NONE" }.join(",")
       end
       csvfile.rewind unless opt.header
+
 
       tbl = TableHandler.new(opt.save_to, opt.console)
       tbl.drop_table(opt.table_name) unless opt.append
