@@ -31,6 +31,7 @@ module Csvql
       opt_parser.on("--strip",           "Strip spaces around columns")                        {|v| opt.strip = v }
       opt_parser.on("--where=COND",      "Where clause")                                       {|v| opt.where = v }
       opt_parser.on("--table-name=NAME", "Override the default table name (tbl)")              {|v| opt.table_name = v }
+      opt_parser.on("--primary-key=ID",  "Create primary key (id)")                            {|v| opt.primary_key = v }
       opt_parser.on("--verbose",         "Enable verbose logging")                             {|v| opt.verbose = v }
       opt_parser.parse!(argv)
 
@@ -85,6 +86,7 @@ module Csvql
                      cols.size.times.map {|i| "c#{i}" }
                    end
         schema = col_name.map {|c| "[#{c}] NONE" }.join(",")
+        schema = "[id] INTEGER PRIMARY KEY," + schema unless opt.primary_key.nil?
       end
       csvfile.rewind unless opt.header
 

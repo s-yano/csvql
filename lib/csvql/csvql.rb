@@ -19,7 +19,7 @@ module Csvql
 
     def create_table(schema, table_name="tbl")
       @col_name = schema.split(",").map {|c| c.match(/\[.*\]/).to_s }
-      @col_size = @col_name.size
+      @col_size = @col_name.select {|coln| not coln.eql? '[id]'}.size
       @table_name = table_name
       exec "CREATE TABLE IF NOT EXISTS #{@table_name} (#{schema})"
     end
@@ -35,7 +35,8 @@ module Csvql
     end
 
     def prepare(cols)
-      sql = "INSERT INTO #{@table_name} (#{@col_name.join(",")}) VALUES (#{cols.map{"?"}.join(",")});"
+      sql = "INSERT INTO #{@table_name} (#{@col_name.select{|coln| not coln.eql? '[id]'}.join(",")}) " +
+            "VALUES (#{cols.map{"?"}.join(",")});"
       @pre = @db.prepare(sql)
     end
 
