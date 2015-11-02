@@ -18,8 +18,8 @@ module Csvql
     end
 
     def create_table(schema, table_name="tbl")
-      @col_name = schema.split(",").map {|c| c.split.first.strip }
-      @col_size = @col_name.size
+      @col_name = schema.split(",").map {|c| c.match(/\[.*\]/).to_s }
+      @col_size = @col_name.select {|coln| not coln.eql? '[id]'}.size
       @table_name = table_name
       exec "CREATE TABLE IF NOT EXISTS #{@table_name} (#{schema})"
     end
@@ -35,14 +35,17 @@ module Csvql
     end
 
     def prepare(cols)
-      sql = "INSERT INTO #{@table_name} (#{@col_name.join(",")}) VALUES (#{cols.map{"?"}.join(",")});"
+      sql = "INSERT INTO #{@table_name} (#{@col_name.select{|coln| not coln.eql? '[id]'}.join(",")}) " +
+            "VALUES (#{cols.map{"?"}.join(",")});"
       @pre = @db.prepare(sql)
     end
 
     def insert(cols, line)
-      if cols.size != @col_size
-        puts "line #{line}: wrong number of fields in line (skipping)"
+      if cols.size > @col_size
+        puts "line #{line}: too many fields in line (skipping)"
         return
+      elsif cols.size < @col_size
+        cols << Array.new(@col_size - cols.size)
       end
       @pre ||= prepare(cols)
       @pre.execute(cols)
